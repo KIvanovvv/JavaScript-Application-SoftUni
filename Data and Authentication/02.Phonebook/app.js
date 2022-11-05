@@ -38,10 +38,13 @@ function attachEvents() {
     const url = `http://localhost:3030/jsonstore/phonebook`;
     ul.innerHTML = "";
     const response = await fetch(url);
-    console.log(response);
     const data = await response.json();
-
-    Object.values(data).forEach((el) => renderUl(el.person, el.phone, el._id));
+    if (Object.values(data).length === 0) {
+      return;
+    }
+    Object.values(data).forEach((el) => {
+      renderUl(el.person, el.phone, el._id);
+    });
   }
 
   function renderUl(person, phone, id) {
