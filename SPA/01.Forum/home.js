@@ -3,11 +3,15 @@ import { showDetails } from "./details.js";
 const section = document.querySelector(`#homeView`);
 const main = document.querySelector(`main`);
 const form = document.querySelector(`form`);
+
 form.addEventListener(`submit`, onSubmit);
 
 section.remove();
 export function showHome() {
   renderAllPosts();
+  main.appendChild(section);
+}
+export function btnHome() {
   main.appendChild(section);
 }
 
@@ -56,7 +60,10 @@ function renderNewPost(data) {
   </div>
 </div>
 </div>`;
-  div.querySelector("a").addEventListener(`click`, showDetails);
+  div.querySelector("a").addEventListener(`click`, () => {
+    section.remove();
+    showDetails(data._id);
+  });
   document.querySelector(`.topic-title`).appendChild(div);
 }
 async function createPost(body) {
