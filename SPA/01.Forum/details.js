@@ -1,4 +1,6 @@
+import { request } from "./Api.js";
 import { btnHome } from "./home.js";
+import { formClear, getFormData } from "./utils.js";
 
 const section = document.querySelector(`#detailsView`);
 const main = document.querySelector(`main`);
@@ -20,9 +22,7 @@ export function showDetails(id) {
 
 async function getPost(postId) {
   const url = `http://localhost:3030/jsonstore/collections/myboard/posts/${postId}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  renderPost(data);
+  renderPost(await request("Get", url));
 }
 function renderPost(data) {
   const div = document.createElement(`div`);
@@ -53,26 +53,20 @@ function renderPost(data) {
 
 async function onSubmit(e) {
   e.preventDefault();
-  const form = e.target;
-  const formData = new FormData(form);
-  const { postText, username } = Object.fromEntries(formData);
-  //TODO make async func to create post comment with ID of current Post then func to render newpost
-  const data = await createNewComment({
-    postText,
-    username,
-    postId,
-    date: new Date(),
-  });
-  formClear(form);
+  let date = new Date();
+  date = date.toDateString();
+  const body = Object.assign(getFormData(e), { date, postId });
+  const data = await createNewComment(body);
+  formClear();
 }
-function formClear(form) {
-  return form.reset();
-}
+
 async function renderAllComments() {
-  const url = `http://localhost:3030/jsonstore/collections/myboard/comments`;
-  const response = await fetch(url);
-  const data = await response.json();
-  const content = Object.values(data);
+  const content = Object.values(
+    await request(
+      "Get",
+      `http://localhost:3030/jsonstore/collections/myboard/comments`
+    )
+  );
   const correctComments = content.filter((x) => x["postId"] == postId);
   document.querySelector(`.comment-section`).innerHTML = "";
   correctComments.forEach((data) => renderNewComment(data));
@@ -101,14 +95,7 @@ function renderNewComment(data) {
 
 async function createNewComment(body) {
   const url = `http://localhost:3030/jsonstore/collections/myboard/comments`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
+  const data = await request("POST", url, body);
   renderNewComment(data);
   return data;
 }

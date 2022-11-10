@@ -1,4 +1,6 @@
+import { request } from "./Api.js";
 import { showDetails } from "./details.js";
+import { formClear, getFormData } from "./utils.js";
 
 const section = document.querySelector(`#homeView`);
 const main = document.querySelector(`main`);
@@ -17,32 +19,25 @@ export function btnHome() {
 
 async function renderAllPosts() {
   const url = `http://localhost:3030/jsonstore/collections/myboard/posts`;
-  const response = await fetch(url);
-  const data = await response.json();
-  Object.values(data).map((data) => renderNewPost(data));
+  Object.values(await request("Get", url)).map((data) => renderNewPost(data));
 }
 
 async function onSubmit(e) {
   e.preventDefault();
   if (e.submitter.className == `cancel`) {
-    return formClear();
+    return formClear(e);
   }
-  const formData = new FormData(e.target);
-  const { topicName, username, postText } = Object.fromEntries(formData);
-
-  const data = await createPost({
-    topicName,
-    username,
-    postText,
-    date: new Date(),
-  });
-  formClear();
-  renderNewPost(data);
+  let date = new Date();
+  date = date.toDateString();
+  const body = Object.assign(getFormData(e), { date });
+  renderNewPost(await createPost(body));
+  formClear(e);
 }
 
 function renderNewPost(data) {
   const div = document.createElement(`div`);
   div.setAttribute(`class`, `topic-container`);
+
   div.innerHTML = `
   <div class="topic-name-wrapper">
   <div class="topic-name">
@@ -60,6 +55,7 @@ function renderNewPost(data) {
   </div>
 </div>
 </div>`;
+
   div.querySelector("a").addEventListener(`click`, () => {
     section.remove();
     showDetails(data._id);
@@ -68,14 +64,6 @@ function renderNewPost(data) {
 }
 async function createPost(body) {
   const url = `http://localhost:3030/jsonstore/collections/myboard/posts`;
-  const response = await fetch(url, {
-    method: `POST`,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
+  const data = await request("Post", url, body);
   return data;
-}
-function formClear() {
-  return form.reset();
 }
