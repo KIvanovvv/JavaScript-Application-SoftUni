@@ -1,4 +1,4 @@
-import { html, render } from "https://unpkg.com/lit-html?module";
+import { html, render, nothing } from "https://unpkg.com/lit-html?module";
 import { contacts } from "./contacts.js";
 
 const root = document.getElementById(`contacts`);
